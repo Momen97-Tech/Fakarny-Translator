@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Translator V4</title>
+<title>The Translator V5</title>
 <link rel="icon" href="icon.png">
 
 <style>
@@ -60,6 +60,7 @@
   }
 
   /* ===== SIDEBAR ===== */
+  /* [تعديل 1] القائمة الجانبية تطفو دائماً فوق المحتوى على جميع أحجام الشاشات */
   #sidebar {
     width: var(--sidebar-width);
     background: var(--card-light);
@@ -67,12 +68,14 @@
     height: 100vh;
     padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden;
     transition: transform 0.3s ease;
     position: fixed;
     right: 0;
     top: 0;
     z-index: 1000;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+    transform: translateX(0);
   }
   body.dark #sidebar {
     background: var(--card-dark);
@@ -82,7 +85,6 @@
     transform: translateX(100%);
   }
 
-  /* Overlay for mobile sidebar */
   #sidebarOverlay {
     display: none;
     position: fixed;
@@ -94,17 +96,35 @@
     display: block;
   }
 
+  /* [تعديل 2] زر الإغلاق داخل القائمة الجانبية */
+  #closeSidebarBtn {
+    display: block;
+    width: 100%;
+    margin-bottom: 14px;
+    background:#4b7bec;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  #closeSidebarBtn:hover {
+    background: #3a64b1;
+    transform: translateY(-1px);
+  }
+
   /* ===== MAIN CONTENT ===== */
+  /* [تعديل 1] المحتوى الرئيسي لا يتأثر بحالة القائمة الجانبية أبداً */
   #main {
     flex: 1;
     padding: 10px 5%;
-    padding-right: calc(5% + var(--sidebar-width));
-    transition: padding-right 0.3s;
+    transition: none;
     max-width: 1200px;
     width: 100%;
-  }
-  #sidebar.hidden ~ #main {
-    padding-right: 5%;
   }
 
   /* ===== TOP BUTTONS ===== */
@@ -122,6 +142,7 @@
     flex-direction: row;
     gap: 15px;
     margin-bottom: 20px;
+    align-items: stretch;
   }
 
   #currentSessionDisplay {
@@ -139,8 +160,8 @@
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    padding-bottom: 48px;
     position: relative;
-    min-height: 164px;
   }
   body.dark .translator-box {
     background: var(--card-dark);
@@ -148,7 +169,8 @@
 
   .translator-box textarea {
     width: 100%;
-    height: 100%;
+    min-height: 60px;
+    height: auto;
     border: none;
     resize: none;
     padding: 0;
@@ -159,6 +181,8 @@
     font-family: var(--font-family);
     color: var(--text-light);
     outline: none;
+    overflow: hidden;
+    display: block;
   }
   body.dark .translator-box textarea {
     color: var(--text-dark);
@@ -186,10 +210,20 @@
     padding: 8px;
     opacity: 0.7;
     transition: opacity 0.2s, color 0.2s;
+    line-height: 1;
   }
   .speak-btn:hover {
     opacity: 1;
     color: var(--primary-hover);
+  }
+  .speak-btn.playing {
+    opacity: 1;
+    color: #e74c3c;
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
   }
 
   /* ===== BUTTONS ===== */
@@ -229,53 +263,57 @@
   }
 
   /* ===== WORD LIST ===== */
-  .word-list div {
+  .word-list div.word-row {
     padding: 8px 12px;
     background: var(--card-light);
     margin-bottom: 8px;
     border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
     align-items: center;
     cursor: grab;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
-  body.dark .word-list div {
+  body.dark .word-list div.word-row {
     background: var(--card-dark);
     border-color: var(--border-color-dark);
   }
 
   .word-list .word-pair {
-    flex-grow: 1;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    cursor: pointer;
+    gap: 4px;
     font-size: clamp(13px, 2vw, 15px);
-    padding: 0;
-    min-width: 120px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .word-list .word-pair span {
+    cursor: pointer;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    flex: 1;
+    min-width: 0;
   }
 
   .word-list .controls {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    justify-content: flex-end;
   }
 
   .word-list button {
     padding: 4px 6px;
-    margin: 0 3px;
+    margin: 0 2px;
     font-size: 14px;
     box-shadow: none;
+    flex-shrink: 0;
   }
 
   .copy-btn-word {
     background: #6c757d;
-    margin-left: 5px;
-    margin-right: 5px;
   }
   .copy-btn-word:hover {
     background: #5a6268;
@@ -285,9 +323,9 @@
     position: static;
     transform: none;
     font-size: 16px;
-    padding: 0;
-    margin-left: 5px;
-    margin-right: 5px;
+    padding: 4px 6px;
+    margin: 0 2px;
+    flex-shrink: 0;
   }
 
   /* ===== SESSION ITEMS ===== */
@@ -299,31 +337,85 @@
     border-radius: 8px;
   }
 
+  /* ===== عداد الكلمات ===== */
+  #wordCounter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-light);
+    border-radius: 20px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    border: 2px solid var(--primary-color);
+    transition: background 0.3s;
+  }
+  body.dark #wordCounter {
+    background: var(--card-dark);
+  }
+  #wordCounter span {
+    font-size: 18px;
+  }
+
+  /* ===== البحث ===== */
+  #searchContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  #searchInput {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--border-color-light);
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: var(--general-font);
+    background: var(--card-light);
+    color: var(--text-light);
+    outline: none;
+    transition: border-color 0.2s, background 0.3s;
+  }
+  #searchInput:focus {
+    border-color: var(--primary-color);
+  }
+  body.dark #searchInput {
+    background: var(--card-dark);
+    color: var(--text-dark);
+    border-color: var(--border-color-dark);
+  }
+  #clearSearch {
+    background: #6c757d;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin: 0;
+  }
+  #clearSearch:hover {
+    background: #5a6268;
+  }
+
+  /* تمييز نتائج البحث */
+  .search-highlight {
+    background: #fff176;
+    border-radius: 3px;
+    color: #222;
+    padding: 0 2px;
+  }
+  body.dark .search-highlight {
+    background: #f9a825;
+    color: #111;
+  }
+
   /* ===== RESPONSIVE: TABLET (max 900px) ===== */
   @media (max-width: 900px) {
-    :root {
-      --sidebar-width: 0px;
-    }
-
     #sidebar {
       width: min(320px, 85vw);
-      height: 100vh;
-      top: 0;
-      right: 0;
-      bottom: auto;
-      border-left: 1px solid var(--border-color-light);
-      border-top: none;
-      transform: translateX(100%);
-    }
-    #sidebar.hidden {
-      transform: translateX(100%);
-    }
-    #sidebar.open {
-      transform: translateX(0);
     }
 
     #main {
-      margin-right: 0 !important;
       padding: 12px 4%;
       max-width: 100%;
     }
@@ -334,7 +426,20 @@
     }
 
     .translator-box {
-      min-height: 140px;
+      min-height: 80px;
+      width: 100%;
+    }
+
+    .word-list div.word-row {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+    }
+    .word-list div.word-row .word-pair:nth-child(2) {
+      grid-column: 1;
+    }
+    .word-list div.word-row .controls {
+      grid-column: 2;
+      grid-row: 1 / 3;
     }
   }
 
@@ -358,21 +463,20 @@
     }
 
     .translator-box {
-      padding: 14px 14px 40px 14px;
-      min-height: 130px;
+      padding: 14px 14px 44px 14px;
+      min-height: 80px;
     }
 
     .translator-box textarea {
       font-size: 16px;
-      min-height: 90px;
+      min-height: 60px;
     }
 
-    .word-list div {
+    .word-list div.word-row {
       padding: 8px;
     }
 
     .word-list .word-pair {
-      min-width: 100px;
       font-size: 13px;
     }
 
@@ -394,7 +498,7 @@
     }
 
     .translator-box {
-      padding: 10px 10px 38px 10px;
+      padding: 10px 10px 42px 10px;
     }
 
     .translator-box textarea {
@@ -418,84 +522,216 @@
 
 
 <body>
-  <!-- Overlay for sidebar on mobile -->
   <div id="sidebarOverlay"></div>
 
   <div id="sidebar" class="hidden">
+    <!-- [تعديل 2] زر الإغلاق داخل القائمة الجانبية -->
+    <button id="closeSidebarBtn" onclick="closeSidebar(); clickSound();" title="إغلاق القائمة">✖</button>
     <h3>الجلسات</h3>
     <div id="sessionList"></div>
-    <button onclick="newSession()" title="New session">+ جلسة جديدة</button>
+    <button onclick="newSession() , clickSound()" title="New session">+ جلسة جديدة</button>
   </div>
   
   <div id="main">
-    <h1>The Atlas Translator</h1>
+    <h1>تطبيق ترجم - Tarjim App</h1>
 
     <div id="topButtons">
-      <button id="toggleSidebar" title="Side menu">☰</button>
+      <button id="toggleSidebar" title="Side menu" >☰</button>
       <button id="darkToggle" title="Change brightness">🌙 الوضع الداكن</button>
     </div>
 
     <h2 id="currentSessionDisplay" title="جلسة العمل الحالية"></h2>
     
     <div id="translation-area">
-      <!-- مربع الإدخال -->
       <div id="input-box" class="translator-box">
           <textarea id="inputWord" placeholder="اكتب النص هنا..." oninput="handleInput()"></textarea>
-          <button class="speak-btn" onclick="speakText(document.getElementById('inputWord').value)" title="Listen">🔊</button>
+          <button class="speak-btn" id="speakInput" onclick="toggleSpeak('inputWord', 'speakInput')" title="Listen">🔊</button>
       </div>
       
-      <!-- مربع الإخراج -->
       <div id="output-box" class="translator-box">
           <textarea id="outputWord" placeholder="الترجمة..." readonly></textarea>
-          <button class="speak-btn" onclick="speakText(document.getElementById('outputWord').value)" title="Listen">🔊</button>
+          <button class="speak-btn" id="speakOutput" onclick="toggleSpeak('outputWord', 'speakOutput')" title="Listen">🔊</button>
       </div>
     </div>
     
     <div id="actionButtons">
-      <button onclick="saveWord()" title="Save">💾</button>
-      <button onclick="clearOutput()" title="Delete">✖</button>
+      <button onclick="saveWord() , clickSound()" title="Save">💾</button>
+      <button onclick="clearOutput() , clickSound() " title="Delete">✖</button>
     </div>
     
     <h3>الكلمات المحفوظة - Saved words 💾</h3>
+
+    <!-- عداد الكلمات -->
+    <div id="wordCounter" title="Counter">
+      📚 عدد الكلمات: <span id="counterNumber">0</span>
+    </div>
+
+    <!-- حقل البحث -->
+    <div id="searchContainer">
+      <input type="text" id="searchInput" placeholder="🔍 ابحث في الكلمات المحفوظة..." oninput="handleSearch()" title="Searching"/>
+      <button id="clearSearch" onclick="clearSearch() , clickSound()" title="مسح البحث">✖</button>
+    </div>
+
     <div id="savedWords" class="word-list"></div>
   </div>
 
 <script>
+
+
+// صوت الازرر Buttons
+const sound = new Audio("click.mp3")
+function clickSound(){
+  sound.play()
+}
+
+// ---------- Auto-resize + sync heights ----------
+const MIN_BOX_H = 90;
+
+function syncBoxHeights() {
+  const inputBox  = document.getElementById('input-box');
+  const outputBox = document.getElementById('output-box');
+  const inputTA   = document.getElementById('inputWord');
+  const outputTA  = document.getElementById('outputWord');
+  if (!inputBox || !outputBox) return;
+
+  if (window.innerWidth > 900) {
+    inputTA.style.height  = 'auto';
+    outputTA.style.height = 'auto';
+    const hIn  = Math.max(inputTA.scrollHeight,  MIN_BOX_H);
+    const hOut = Math.max(outputTA.scrollHeight, MIN_BOX_H);
+    const shared = Math.max(hIn, hOut);
+    inputTA.style.height  = shared + 'px';
+    outputTA.style.height = shared + 'px';
+  } else {
+    inputTA.style.height  = 'auto';
+    inputTA.style.height  = Math.max(inputTA.scrollHeight,  MIN_BOX_H) + 'px';
+    outputTA.style.height = 'auto';
+    outputTA.style.height = Math.max(outputTA.scrollHeight, MIN_BOX_H) + 'px';
+  }
+}
+
+function autoResize() {
+  syncBoxHeights();
+}
+
+window.addEventListener('resize', syncBoxHeights);
+
+function initResize() {
+  syncBoxHeights();
+}
+
 // ---------- TTS ----------
 const synth = window.speechSynthesis;
 
-function speakText(text) {
-    if (!text) return;
-    const isArabic = /[\u0600-\u06FF]/.test(text);
-    if (window.speechSynthesis) {
-        const voices = speechSynthesis.getVoices();
-        const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
-        const englishVoice = voices.find(v => v.lang.startsWith('en'));
-        const utterance = new SpeechSynthesisUtterance(text);
-        if (isArabic && arabicVoice) {
-            utterance.voice = arabicVoice;
-            utterance.lang = arabicVoice.lang;
-        } else if (!isArabic && englishVoice) {
-            utterance.voice = englishVoice;
-            utterance.lang = englishVoice.lang;
-        }
-        if ((isArabic && arabicVoice) || (!isArabic && englishVoice)) {
-            speechSynthesis.cancel();
-            speechSynthesis.speak(utterance);
-            return;
-        }
+let activeSpeakBtn = null;
+
+function toggleSpeak(textareaId, btnId) {
+  const btn = document.getElementById(btnId);
+  
+  if (btn.classList.contains('playing')) {
+    stopSpeak();
+    return;
+  }
+  
+  stopSpeak();
+  
+  const text = document.getElementById(textareaId).value.trim();
+  if (!text) return;
+  
+  speakText(text, btn);
+}
+
+function stopSpeak() {
+  if (window.speechSynthesis) {
+    speechSynthesis.cancel();
+  }
+  if (activeSpeakBtn) {
+    activeSpeakBtn.classList.remove('playing');
+    activeSpeakBtn.textContent = '🔊';
+    activeSpeakBtn = null;
+  }
+  if (window._currentAudio) {
+    window._currentAudio.pause();
+    window._currentAudio = null;
+  }
+}
+
+function speakText(text, btn) {
+  if (!text) return;
+  const isArabic = /[\u0600-\u06FF]/.test(text);
+  
+  if (window.speechSynthesis) {
+    const voices = speechSynthesis.getVoices();
+    const arabicVoice = voices.find(v => v.lang.startsWith('ar'));
+    const englishVoice = voices.find(v => v.lang.startsWith('en'));
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    let voiceFound = false;
+    if (isArabic && arabicVoice) {
+      utterance.voice = arabicVoice;
+      utterance.lang = arabicVoice.lang;
+      voiceFound = true;
+    } else if (!isArabic && englishVoice) {
+      utterance.voice = englishVoice;
+      utterance.lang = englishVoice.lang;
+      voiceFound = true;
     }
-    try {
-        const lang = isArabic ? 'ar' : 'en';
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
-        const audio = new Audio(url);
-        audio.play().catch(err => {
-            console.warn("Playback blocked:", err);
-            alert("عذراً حدث خطأ أثناء نطق الترجمة 🔊🚫");
-        });
-    } catch (err) {
-        console.error("TTS error:", err);
+    
+    if (voiceFound) {
+      if (btn) {
+        btn.classList.add('playing');
+        btn.textContent = '⏹️';
+        activeSpeakBtn = btn;
+      }
+      utterance.onend = () => {
+        if (btn) {
+          btn.classList.remove('playing');
+          btn.textContent = '🔊';
+        }
+        if (activeSpeakBtn === btn) activeSpeakBtn = null;
+      };
+      utterance.onerror = () => {
+        if (btn) {
+          btn.classList.remove('playing');
+          btn.textContent = '🔊';
+        }
+        if (activeSpeakBtn === btn) activeSpeakBtn = null;
+      };
+      speechSynthesis.speak(utterance);
+      return;
     }
+  }
+  
+  try {
+    const lang = isArabic ? 'ar' : 'en';
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+    const audio = new Audio(url);
+    window._currentAudio = audio;
+    if (btn) {
+      btn.classList.add('playing');
+      btn.textContent = '⏹️';
+      activeSpeakBtn = btn;
+    }
+    audio.onended = () => {
+      if (btn) { btn.classList.remove('playing'); btn.textContent = '🔊'; }
+      if (activeSpeakBtn === btn) activeSpeakBtn = null;
+      window._currentAudio = null;
+    };
+    audio.onerror = () => {
+      if (btn) { btn.classList.remove('playing'); btn.textContent = '🔊'; }
+      if (activeSpeakBtn === btn) activeSpeakBtn = null;
+      window._currentAudio = null;
+      alert("عذراً حدث خطأ أثناء نطق الترجمة 🔊🚫");
+    };
+    audio.play().catch(err => {
+      if (btn) { btn.classList.remove('playing'); btn.textContent = '🔊'; }
+      activeSpeakBtn = null;
+      window._currentAudio = null;
+      console.warn("Playback blocked:", err);
+    });
+  } catch (err) {
+    console.error("TTS error:", err);
+  }
 }
 
 // ---------- Copy ----------
@@ -578,10 +814,8 @@ function openSidebar() {
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebarOverlay");
   sidebar.classList.remove("hidden");
-  if (window.innerWidth <= 900) {
-    sidebar.classList.add("open");
-    overlay.classList.add("active");
-  }
+  sidebar.classList.add("open");
+  overlay.classList.add("active");
 }
 
 function closeSidebar() {
@@ -589,14 +823,11 @@ function closeSidebar() {
   const overlay = document.getElementById("sidebarOverlay");
   sidebar.classList.remove("open");
   overlay.classList.remove("active");
-  if (window.innerWidth > 900) {
-    sidebar.classList.add("hidden");
-  } else {
-    sidebar.classList.add("hidden");
-  }
+  sidebar.classList.add("hidden");
 }
 
 document.getElementById("toggleSidebar").onclick = () => {
+  clickSound()
   const sidebar = document.getElementById("sidebar");
   if (sidebar.classList.contains("hidden")) {
     openSidebar();
@@ -645,8 +876,8 @@ function renderSessions() {
     div.className = "session-item";
     if (s === current) div.classList.add("active");
     let isDefault = (s === DEFAULT_SESSION_NAME);
-    let editBtnHtml = !isDefault ? `<button class="edit-btn" onclick="editSessionName('${s}')" title="Name change">✏️</button>` : '';
-    let deleteBtnHtml = !isDefault ? `<button onclick="deleteSession(event, '${s}')" title="Delete">✖</button>` : '';
+    let editBtnHtml = !isDefault ? `<button class="edit-btn" onclick="editSessionName('${s}') , clickSound()" title="Change name">✏️</button>` : '';
+    let deleteBtnHtml = !isDefault ? `<button onclick="deleteSession(event, '${s}') , clickSound()" title="Delete">✖</button>` : '';
     div.innerHTML = `<span>${s}</span><div>${editBtnHtml}${deleteBtnHtml}</div>`;
     div.onclick = (e) => {
       if (e.target.tagName !== "BUTTON") {
@@ -674,20 +905,25 @@ function renderWords() {
   box.innerHTML = "";
   if (!current || !sessions[current]) {
     box.innerHTML = `<p>اختر جلسة أو ابدأ جلسة جديدة لحفظ الكلمات. (الجلسة الحالية: ${current})</p>`;
+    updateCounter(0);
     return;
   }
+
+  updateCounter(sessions[current].length);
+
   sessions[current].forEach((w, i) => {
     let d = document.createElement("div");
+    d.className = "word-row";
     d.draggable = true;
     d.dataset.index = i;
     d.innerHTML = `
       <div class="word-pair">
-        <button class="speak-btn" onclick="speakText('${w[0].replace(/'/g, "\\'")}')" title="Listen">🔊</button>
+        <button class="speak-btn" onclick="speakText('${w[0].replace(/'/g, "\\'")}', null)" title="Listen">🔊</button>
         <button class="copy-btn-word" onclick="copyText(event, \`${w[0].replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)" title="Copy">📋</button>
         <span onclick="loadWord('${w[0].replace(/'/g, "\\'")}', '${w[1].replace(/'/g, "\\'")}')">${w[0]}</span>
       </div>
       <div class="word-pair">
-        <button class="speak-btn" onclick="speakText('${w[1].replace(/'/g, "\\'")}')" title="Listen">🔊</button>
+        <button class="speak-btn" onclick="speakText('${w[1].replace(/'/g, "\\'")}', null)" title="Listen">🔊</button>
         <button class="copy-btn-word" onclick="copyText(event, \`${w[1].replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)" title="Copy">📋</button>
         <span onclick="loadWord('${w[0].replace(/'/g, "\\'")}', '${w[1].replace(/'/g, "\\'")}')">${w[1]}</span>
       </div>
@@ -706,6 +942,7 @@ function renderWords() {
 function loadWord(source, target) {
     document.getElementById("inputWord").value = source;
     document.getElementById("outputWord").value = target;
+    autoResize();
 }
 
 function dragStart(e) {
@@ -741,13 +978,18 @@ function saveWord() {
   sessions[current].push([w, t]);
   saveSessions();
   renderWords();
-  document.getElementById("inputWord").value = "";
-  document.getElementById("outputWord").value = "";
+  const inputEl = document.getElementById("inputWord");
+  const outputEl = document.getElementById("outputWord");
+  inputEl.value = "";
+  outputEl.value = "";
+  autoResize();
 }
 
 function clearOutput() {
   document.getElementById("inputWord").value = "";
   document.getElementById("outputWord").value = "";
+  autoResize();
+  stopSpeak();
 }
 
 function del(e, i) {
@@ -778,15 +1020,20 @@ async function translate(text) {
 
 function handleInput() {
     clearTimeout(debounceTimer);
-    let text = inputWord.value.trim();
-    if (!text) { outputWord.value = ""; return; }
-    outputWord.value = "يتم الترجمة...";
+    const inputEl = document.getElementById("inputWord");
+    const outputEl = document.getElementById("outputWord");
+    let text = inputEl.value.trim();
+    if (!text) { outputEl.value = ""; autoResize(); return; }
+    outputEl.value = "يتم الترجمة...";
+    autoResize();
     debounceTimer = setTimeout(async () => {
-        outputWord.value = await translate(text);
+        outputEl.value = await translate(text);
+        autoResize();
     }, 500);
 }
 
 document.getElementById("darkToggle").onclick = () => {
+  clickSound()
   document.body.classList.toggle("dark");
   if (document.body.classList.contains("dark")) {
     localStorage.setItem('theme', 'dark');
@@ -796,6 +1043,88 @@ document.getElementById("darkToggle").onclick = () => {
     document.getElementById('darkToggle').textContent = '🌙 Dark Mode';
   }
 };
+
+// ========================================
+// عداد الكلمات
+// ========================================
+function updateCounter(count) {
+  document.getElementById("counterNumber").textContent = count;
+}
+
+// ========================================
+// وظيفة البحث
+// ========================================
+function handleSearch() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const box = document.getElementById("savedWords");
+  box.innerHTML = "";
+
+  if (!current || !sessions[current]) return;
+
+  const words = sessions[current];
+
+  if (!query) {
+    renderWords();
+    return;
+  }
+
+  const results = words.filter(w =>
+    w[0].toLowerCase().includes(query) || w[1].toLowerCase().includes(query)
+  );
+
+  updateCounter(results.length);
+
+  if (results.length === 0) {
+    box.innerHTML = `<p style="color: #888;">لا توجد نتائج للبحث عن: "${query}"</p>`;
+    return;
+  }
+
+  results.forEach((w) => {
+    const realIndex = words.indexOf(w);
+    let d = document.createElement("div");
+    d.className = "word-row";
+    d.draggable = false;
+    d.dataset.index = realIndex;
+
+    const highlightedW0 = highlightText(w[0], query);
+    const highlightedW1 = highlightText(w[1], query);
+
+    d.innerHTML = `
+      <div class="word-pair">
+        <button class="speak-btn" onclick="speakText('${w[0].replace(/'/g, "\\'")}', null)" title="Listen">🔊</button>
+        <button class="copy-btn-word" onclick="copyText(event, \`${w[0].replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)" title="Copy">📋</button>
+        <span onclick="loadWord('${w[0].replace(/'/g, "\\'")}', '${w[1].replace(/'/g, "\\'")}')">${highlightedW0}</span>
+      </div>
+      <div class="word-pair">
+        <button class="speak-btn" onclick="speakText('${w[1].replace(/'/g, "\\'")}', null)" title="Listen">🔊</button>
+        <button class="copy-btn-word" onclick="copyText(event, \`${w[1].replace(/`/g, '\\`').replace(/'/g, "\\'")}\`)" title="Copy">📋</button>
+        <span onclick="loadWord('${w[0].replace(/'/g, "\\'")}', '${w[1].replace(/'/g, "\\'")}')">${highlightedW1}</span>
+      </div>
+      <div class="controls">
+        <button onclick="del(event, ${realIndex})" title="Delete">✖</button>
+      </div>
+    `;
+    box.appendChild(d);
+  });
+}
+
+function highlightText(text, query) {
+  if (!query) return text;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+}
+
+function clearSearch() {
+  document.getElementById("searchInput").value = "";
+  renderWords();
+}
+
+// تهيئة resize عند تحميل الصفحة
+window.addEventListener('load', initResize);
+window.addEventListener('resize', syncBoxHeights);
+
+
+
 </script>
 </body>
 </html>
