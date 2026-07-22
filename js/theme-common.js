@@ -9,9 +9,9 @@ function clickSound() {
   const darkToggleBtn = document.getElementById('darkToggle');
   if (localStorage.getItem('theme') === 'dark') {
     document.body.classList.add('dark');
-    if (darkToggleBtn) darkToggleBtn.textContent = '☀️ Light Mode';
+    if (darkToggleBtn) darkToggleBtn.textContent = '☀️ الوضع الفاتح';
   } else {
-    if (darkToggleBtn) darkToggleBtn.textContent = '🌙 Dark Mode';
+    if (darkToggleBtn) darkToggleBtn.textContent = '🌙 الوضع الداكن';
   }
 })();
 
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.classList.toggle("dark");
       const isDark = document.body.classList.contains("dark");
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      darkToggleBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+      darkToggleBtn.textContent = isDark ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
     };
   }
 });
