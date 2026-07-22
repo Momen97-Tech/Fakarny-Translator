@@ -378,17 +378,28 @@ function saveSessions() {
 async function translate(text) {
   if (!text) return "";
   try {
-    let isArabic   = /[\u0600-\u06FF]/.test(text);
+    let cleanText = text.trim();
+    let isArabic   = /[\u0600-\u06FF]/.test(cleanText);
     let targetLang = isArabic ? "en" : "ar";
     let sourceLang = isArabic ? "ar" : "en";
-    let textForApi = isArabic ? text : text.charAt(0).toUpperCase() + text.slice(1);
-    let r    = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(textForApi)}&langpair=${sourceLang}|${targetLang}`);
+    
+    // ✅ إرسال النص كما كتبه المستخدم دون تكبير الحرف الأول تلقائياً
+    let r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=${sourceLang}|${targetLang}`);
     let data = await r.json();
+    
     if (data.responseStatus && data.responseStatus !== 200) {
       console.error("Translation API error:", data.responseDetails);
       return "تم الوصول للحد اليومي، حاول لاحقًا";
     }
-    return data.responseData.translatedText;
+
+    let translated = data.responseData.translatedText;
+
+    // 🧹 تنظيف أي أقواس أو زوائد قد ترجعها الـ API أحياناً
+    if (translated) {
+      translated = translated.replace(/\[.*?:?\s*/g, "").replace(/\]/g, "").trim();
+    }
+
+    return translated || "لا توجد ترجمة";
   } catch (e) {
     console.error("Translation error:", e);
     return "خطأ في الاتصال";
